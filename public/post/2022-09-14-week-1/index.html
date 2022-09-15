@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+		
+		
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<title>Week 1 &middot; My New Hugo Site</title>
+
+		
+		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="/css/fonts.css">
+		
+		<link rel="icon" href="/favicon.ico"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="My New Hugo Site" />
+
+		<script src="/js/darkmode.js"></script>
+	</head>
+
+    <body>
+        		<nav class="nav">
+			<div class="nav-container">
+				<a href="/">
+					
+						<h2 class="nav-title">My New Hugo Site</h2>
+					
+				</a>
+				<ul>
+    
+    
+</ul>
+			</div>
+		</nav>
+
+        <div id="darkModeToggle" onclick="toggleDarkMode()">
+  &#9680; 
+</div>
+
+        
+
+<main>
+	
+
+
+        <div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        Felix Chen
+        <br>
+        <span>on&nbsp;</span><time datetime="2022-09-14 00:00:00 &#43;0000 UTC">September 14, 2022</time>
+</div>
+
+		<h1 class="post-title">Week 1</h1>
+<div class="post-line"></div>
+
+		
+
+		
+
+
+<p><em>This blog is part of a series related to Gov 1347: Election Analytics, a course at Harvard College taught by Professor <a href="https://http://ryandenos.com/">Ryan Enos</a>.</em></p>
+<p>Each week until November 3, I will be updating this blog series on forecasting, with the final product being a prediction model on the 2022 US midterm election. I will complete blog extension #1, with some discussion on gerrymandering.</p>
+<div id="voteshare-margins-by-state-in-2018-and-2020" class="section level1">
+<h1>Voteshare Margins By State in 2018 and 2020</h1>
+<p>I chose to look at 2018 because of its proximity chronologically to the 2022 election, and its status as a midterm election (which may mean there are some additional similarities in terms of voter turnout compared to a presidential election year). This maps will provide a useful comparison point for 2022 results, and highlight areas of emerging trends or strengthening ones.</p>
+<pre class="r"><code># 1. Create a map of Republican/Democrat voteshare margin by state in a year of your choice (2018)
+
+## 2018 MAP
+# filter data for 2018 only
+house_2018 &lt;- house_party_share_by_district %&gt;%
+  filter(raceYear == 2018) %&gt;%
+  select(raceYear, State, RepVotes, DemVotes, R_vote_margin) %&gt;%
+  
+  # party vote share by state
+  group_by(State) %&gt;%
+    mutate(R_votemargin_st = (sum(RepVotes)) / sum(RepVotes + DemVotes),
+           D_votemargin_st = (sum(DemVotes)) / sum(RepVotes + DemVotes),
+           overall_votemargin = R_votemargin_st - D_votemargin_st) %&gt;% rename(state = State)
+
+# load in map
+states_map &lt;- usmap::us_map()
+
+# plot
+plot_usmap(data = house_2018, labels = TRUE, regions = &quot;states&quot;, values = &quot;overall_votemargin&quot;) +
+  scale_fill_gradient2(low = &quot;blue&quot;, mid = &quot;white&quot;, high = &quot;red&quot;, name = &quot;Two-party voteshare margin&quot;, limits = c(-1.0,1.0)) + 
+  theme_felix() + 
+  labs(title = &quot;Voteshare Margin by State in 2018&quot;, 
+       subtitle = &quot;Red shading means larger overall Rep. voteshare; blue shading means larger overall Dem. voteshare&quot;)</code></pre>
+<p><img src="http://example.org/post/2022-09-14-week-1/index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<pre class="r"><code>## 2020 MAP
+# filter data for 2020 only
+house_2020 &lt;- house_party_share_by_district %&gt;%
+  filter(raceYear == 2020) %&gt;%
+  select(raceYear, State, RepVotes, DemVotes, R_vote_margin) %&gt;%
+  
+  # party vote share by state
+  group_by(State) %&gt;%
+    mutate(R_votemargin_st = (sum(RepVotes)) / sum(RepVotes + DemVotes),
+           D_votemargin_st = (sum(DemVotes)) / sum(RepVotes + DemVotes),
+           overall_votemargin = R_votemargin_st - D_votemargin_st) %&gt;% rename(state = State)
+
+# load in map
+states_map &lt;- usmap::us_map()
+
+# plot
+plot_usmap(data = house_2020, labels = TRUE, regions = &quot;states&quot;, values = &quot;overall_votemargin&quot;) +
+  scale_fill_gradient2(low = &quot;blue&quot;, mid = &quot;white&quot;, high = &quot;red&quot;, name = &quot;Two-party voteshare margin&quot;, limits = c(-1.0,1.0)) +
+  theme_felix() + 
+  labs(title = &quot;Voteshare Margin by State in 2020&quot;, 
+       subtitle = &quot;Red shading means larger overall Rep. voteshare; blue shading means larger overall Dem. voteshare&quot;)</code></pre>
+<p><img src="http://example.org/post/2022-09-14-week-1/index_files/figure-html/unnamed-chunk-1-2.png" width="672" />
+These two maps I generated aim to show the voteshare margins in the 2018 and 2020 elections for seats in the House of Representatives. To clarify, the red shading demonstrates that there were greater overall Republican votes in a state than Democratic votes, and blue shading represents the inverse scenario. The aim of this was to help visualize some of the differences between a midterm election year and a presidential election year, and I decided to use the two most recent House elections in hopes that it would be informative about the current climate.</p>
+<p>In a comparison between the two maps, one overall trend is that blue states in 2018 tended to be more muted in 2020; this means that in those specific states, Democratic margins had been reduced by a stronger showing from Republicans. However, an important caveat to keep in mind is that for those with margins of 1.0, it is likely that the winner of the race ran unopposed, without a challenger from the other party. So for example, South Dakota appears in 2020 on the extreme end of the spectrum, which was due to the fact that the Democratic party did not field a candidate for the at-large election. In addition Arizona’s emergence as a battleground state is evident in the data from 2018 and 2020: the margin was -0.01722793 in 2018 and +0.003729324 in 2020, meaning that it’s right on the cusp in terms of Democratic votes and Republican votes statewide. However, a more granular analysis by congressional district might reveal geographic differences in those votes that then translate into differences in power.</p>
+</div>
+<div id="voteshare-margin-by-state-and-congressional-district-in-2014" class="section level1">
+<h1>Voteshare Margin by State and Congressional District in 2014</h1>
+<pre class="r"><code># 2. Create a map of Republican/Democrat voteshare margin by state and congressional district in 2014
+
+# filter for 2014 election only
+house_2014 &lt;- house_party_share_by_district %&gt;%
+    filter(raceYear == 2014) %&gt;%
+    select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %&gt;%
+  
+    # summarize party vote share by state
+    group_by(State, district_num) %&gt;%
+    summarise(Rep_votes_pct = RepVotesMajorPercent,
+              Dem_votes_pct = DemVotesMajorPercent) %&gt;%
+  
+    # mutate vote margin by state
+    mutate(votemargin_st = Rep_votes_pct - Dem_votes_pct) %&gt;%
+  
+    # rename district variable name to match shapefile
+    rename(DISTRICT = district_num, STATENAME = State)
+
+# change class into number
+cd114$DISTRICT &lt;- as.numeric(cd114$DISTRICT)
+
+# join election returns with shapefiles
+cd114 &lt;- cd114 %&gt;% left_join(house_2014, by=c(&quot;STATENAME&quot;, &quot;DISTRICT&quot;))
+
+# simplify
+districts_simplified &lt;- rmapshaper::ms_simplify(cd114, keep = 0.001)
+
+# plot
+ggplot() +
+  geom_sf(data = districts_simplified, 
+          aes(fill = votemargin_st),
+          inherit.aes=FALSE,alpha=0.9) +
+  
+  coord_sf(xlim = c(-125, -66.57), ylim = c(25, 50), expand = FALSE) +
+  
+  # define colorscale
+  scale_fill_gradient2(low = &quot;blue&quot;, mid = &quot;white&quot;, high = &quot;red&quot;, name = &quot;Voteshare Margin&quot;, limits=c(-100,100)) +
+  
+  # add labels
+  labs(title = &quot;Voteshare Margins by State Congressional District in 2014&quot;,
+    subtitle = &quot;Red shading is larger overall Rep. voteshare; blue shading is larger overall Dem. voteshare&quot;) +
+  
+  # define theme 
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())</code></pre>
+<p><img src="http://example.org/post/2022-09-14-week-1/index_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+First of all, I believe the year’s results are relevant in one aspect since the elections were contested on maps drawn following the 2010 census. Since the 2010 election involved a Republican wave election that brought many legislators into power, we can start to see some of those impacts on how the map is shaped. Observing this map of congressional district results, we can see that there is a general trend of Democratic margins being highest in urban areas (some of which are on the coasts). This is a fairly well-known fact, and 2014 is a good example of this. For the voteshare margins where it was uncontested, although they are not very informative in terms of the nuance of Republican/Democratic support in the area, it is still very telling that no contestants were even fielded by the opposing party.</p>
+</div>
+<div id="gerrymandering" class="section level1">
+<h1>Gerrymandering</h1>
+<p>In my future analysis, I plan to further inspect 2018 for a couple of reasons. First of all, I believe the year’s results are relevant in one aspect since the elections were contested on maps drawn following the 2010 census. These are of interest to observing gerrymandering since in 2010, there was a Republican wave election that brought many legislators into power who could later have an influence. Eight years following the census and redistricting, there is reason to believe that the election of 2018 could be insightful about the confines and limitations of a gerrymandered map.</p>
+<p>Secondly, this was an election widely touted as a “blue wave” Some political commentators even characterized as a <a href="https://www.cnn.com/2018/12/06/politics/latest-house-vote-blue-wave">“blue tsunami”</a>. And with historic highs in terms of <a href="https://www.pewresearch.org/fact-tank/2019/05/01/historic-highs-in-2018-voter-turnout-extended-across-racial-and-ethnic-groups/">voter turnout that year</a>, I thought that it might be a good candidate for observing the blunting effects of gerrymandering in terms of creating a power allocation discernibly different than the voter share.</p>
+<p>Why is this relevant? Gerrymandering as an issue is particularly salient in light of the 2020 census and recent legislative and judicial action regarding redistricting. Maps are currently being determined that will shape the election geography for the next decade.</p>
+<div id="sources" class="section level2">
+<h2>Sources:</h2>
+<p>Data for these maps are from congressional district level U.S. House election results, 1948-2020</p>
+</div>
+</div>
+
+
+		
+	</div>
+
+	<div class="pagination">
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
+
+
+        		<footer>
+			
+			<span>
+			&copy; <time datetime="2022-09-15 16:08:58.936107 -0400 EDT m=&#43;0.286779111">2022</time> . Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
+</html>
