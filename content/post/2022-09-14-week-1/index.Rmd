@@ -15,7 +15,7 @@ Each week until November 3, I will be updating this blog series on forecasting, 
 
 ```{r setup, include=FALSE}
 # Hiding all code output
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # Loading libraries
 library(tidyverse)
